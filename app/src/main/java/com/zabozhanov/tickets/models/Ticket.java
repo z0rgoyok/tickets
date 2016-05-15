@@ -16,8 +16,17 @@ public class Ticket extends RealmObject {
 
     private String type;
 
-    @Index
-    private String event;
+    private Event event;
+
+    private String direction;
+
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
 
     public long getId() {
         return id;
@@ -43,11 +52,13 @@ public class Ticket extends RealmObject {
         this.type = type;
     }
 
-    public String getEvent() {
+    public Event getEvent() {
         return event;
     }
 
-    public void setEvent(String event) {
+    public void setEvent(Event event) {
         this.event = event;
     }
+
+
 }

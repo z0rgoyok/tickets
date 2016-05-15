@@ -1,25 +1,53 @@
 package com.zabozhanov.tickets;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
+import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.zabozhanov.tickets.models.Event;
+import com.zabozhanov.tickets.models.Ticket;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private ProgressDialog parsingProgressDialog;
+
+    //todo: для тестирования обновляемой выборки
+    @BindView(R.id.txt_tickets_count) TextView txtTicketsCount;
+
+
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -31,6 +59,11 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        realm = Realm.getDefaultInstance();
+        RealmResults<Ticket> tickets = realm.where(Ticket.class).findAll();
+        RealmResults<Event> events = realm.where(Event.class).findAll();
+        txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
     }
 
     @Override
@@ -45,19 +78,13 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -74,11 +101,71 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_events_list) {
 
         } else if (id == R.id.nav_import_data) {
-
+            Intent intent = new Intent(this, ParseService.class);
+            intent.setAction(ParseService.ACTION_PARSE);
+            String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/test.csv";
+            File f = new File(path);
+            intent.putExtra(ParseService.EXTRA_PATH, path);
+            startService(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (realm != null) {
+            realm.close();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onEvent(ParseService.ParseServiceEvent event) {
+        EventBus.getDefault().removeStickyEvent(event);
+        if (event.finished) {
+            if (parsingProgressDialog != null) {
+                parsingProgressDialog.dismiss();
+                parsingProgressDialog = null;
+            }
+            if (event.error) {
+                Toast.makeText(this, R.string.data_parsing_error, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(this, R.string.data_parsing_finished, Toast.LENGTH_SHORT).show();
+
+
+            RealmResults<Ticket> tickets = realm.where(Ticket.class).findAll();
+            RealmResults<Event> events = realm.where(Event.class).findAll();
+            txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
+
+            return;
+        }
+        if (parsingProgressDialog == null) {
+            createParsingDialog();
+        }
+        parsingProgressDialog.setMax(100);
+        parsingProgressDialog.setProgress(event.progress);
+    }
+
+    private void createParsingDialog() {
+        parsingProgressDialog = new ProgressDialog(this);
+        parsingProgressDialog.setTitle(getString(R.string.parsing_data_title));
+        parsingProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        parsingProgressDialog.show();
     }
 }

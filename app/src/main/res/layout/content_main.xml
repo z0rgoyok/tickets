@@ -10,6 +10,13 @@
     tools:context="com.zabozhanov.tickets.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
+
+    <TextView
+        android:text="test"
+        android:id="@+id/txt_tickets_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <RelativeLayout
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"

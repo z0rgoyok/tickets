@@ -1,7 +1,10 @@
 package com.zabozhanov.tickets;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 
 import com.zabozhanov.tickets.models.TicketCSVParser;
 
@@ -14,15 +17,13 @@ import org.greenrobot.eventbus.EventBus;
  * <p/>
  * TODO: Customize class - update intent actions and extra parameters.
  */
-public class ParseService extends IntentService {
+public class ParseService extends Service {
 
     public class ParseServiceEvent {
         public String path;
         public int progress;
         public boolean error;
         public boolean finished;
-        public long size;
-        public int parsed;
 
         public ParseServiceEvent(String path, int progress, boolean error) {
             this.path = path;
@@ -40,23 +41,19 @@ public class ParseService extends IntentService {
             this.finished = finished;
         }
 
-        public ParseServiceEvent(int progress, String path, long size, int parsed) {
-            this.progress = progress;
-            this.path = path;
-            this.size = size;
-            this.parsed = parsed;
-        }
     }
 
     public static final String ACTION_PARSE = "com.zabozhanov.tickets.action.PARSE";
     public static final String EXTRA_PATH = "com.zabozhanov.tickets.extra.PATH";
 
-    public ParseService() {
-        super("ParseService");
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_PARSE.equals(action)) {
@@ -64,6 +61,7 @@ public class ParseService extends IntentService {
                 handleParse(param1);
             }
         }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void handleParse(final String path) {
@@ -71,8 +69,8 @@ public class ParseService extends IntentService {
         parser.parseFile(path, new TicketCSVParser.ITickerListener() {
 
             @Override
-            public void progress(int progress, long total, int count) {
-                postSticky(new ParseServiceEvent(progress, path, total, count));
+            public void progress(int progress) {
+                postSticky(new ParseServiceEvent(progress, path));
             }
 
             @Override
@@ -95,4 +93,8 @@ public class ParseService extends IntentService {
         });
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
 }

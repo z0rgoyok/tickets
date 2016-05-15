@@ -1,12 +1,17 @@
 package com.zabozhanov.tickets.models;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.realm.Realm;
 import io.realm.RealmAsyncTask;
+import io.realm.RealmResults;
 
 /**
  * Created by z0rgoyok on 14.05.16.
@@ -14,7 +19,7 @@ import io.realm.RealmAsyncTask;
 public class TicketCSVParser {
 
     public interface ITickerListener {
-        void progress(int progress, long total, int count);
+        void progress(int progress);
 
         void finish();
 
@@ -25,32 +30,52 @@ public class TicketCSVParser {
 
     public void parseFile(final String path, final ITickerListener listener) {
         final Realm realm = Realm.getDefaultInstance();
+        listener.progress(0);
+
+        RealmResults<Event> events = realm.where(Event.class).findAll();
+        final Map<String, Event> eventsMap = new HashMap<>();
+        for (int i = 0; i < events.size(); i++) {
+            eventsMap.put(events.get(i).getName(), events.get(i));
+        }
+
+        final long start = System.nanoTime();
+
         transaction = realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
                 File file = new File(path);
-                realm.beginTransaction();
+                long fileSize = file.length();
                 try {
-                    LineNumberReader lnr = new LineNumberReader(new FileReader(file));
-                    lnr.skip(Long.MAX_VALUE);
-                    long linesCount = lnr.getLineNumber() + 1;
-                    lnr.close();
-                    int lineIndex = 0;
+                    long readBytes = 0;
                     BufferedReader br = new BufferedReader(new FileReader(new File(path)));
                     for (String line; (line = br.readLine()) != null; ) {
-                        int percent = (int) ((lineIndex * 100.0f) / linesCount);
+
+                        readBytes += line.getBytes().length;
+
+                        int percent = (int) ((readBytes * 100.0f) / fileSize);
+                        //Log.d("READ", "Read: " + readBytes + ", total: " + file + ", percentage: " + percent);
                         String[] fields = line.split(";");
 
                         Ticket ticket = new Ticket();
                         ticket.setId(Long.parseLong(fields[0]));
                         ticket.setCost(Integer.parseInt(fields[1]));
-                        ticket.setType(fields[2]);
-                        ticket.setEvent(fields[3]);
-                        realm.copyToRealmOrUpdate(ticket);
-                        lineIndex++;
-                        listener.progress(percent, linesCount, lineIndex);
+                        ticket.setDirection(fields[2]);
+                        ticket.setType(fields[3]);
+
+                        String eventName = fields[4];
+                        Event event = eventsMap.get(eventName);
+                        if (event == null) {
+                            event = realm.createObject(Event.class);
+                            event.setName(eventName);
+                            eventsMap.put(eventName, event);
+                        } else {
+                            //Log.d("READ", "Event exists");
+                        }
+                        ticket.setEvent(event);
+                        event.getTickets().add(ticket);
+                        listener.progress(percent);
                     }
-                    listener.finish();
+                    //listener.finish();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     listener.error(ex);
@@ -60,6 +85,9 @@ public class TicketCSVParser {
             @Override
             public void onSuccess() {
                 realm.close();
+                long elapsedTime = System.nanoTime() - start;
+
+                Log.d("READ", "Pasing time: " + elapsedTime);
                 listener.finish();
             }
         }, new Realm.Transaction.OnError() {
