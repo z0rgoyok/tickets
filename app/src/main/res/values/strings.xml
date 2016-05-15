@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Tickets</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="events_list">Список мероприятий</string>
+    <string name="data_import">Импорт данных</string>
+
+</resources>
