@@ -12,15 +12,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.zabozhanov.tickets.fragments.EventFragment;
+import com.zabozhanov.tickets.fragments.EventsFragment;
 import com.zabozhanov.tickets.models.Event;
 import com.zabozhanov.tickets.models.Ticket;
+import com.zabozhanov.tickets.services.ParseService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -28,10 +27,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity
@@ -71,7 +68,7 @@ public class MainActivity extends AppCompatActivity
         RealmResults<Event> events = realm.where(Event.class).findAll();
         //txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
 
-        EventFragment fragment = EventFragment.newInstance();
+        EventsFragment fragment = EventsFragment.newInstance();
         changeFragment(fragment);
     }
 

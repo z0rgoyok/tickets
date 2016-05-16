@@ -12,8 +12,13 @@ import android.widget.TextView;
 
 import com.zabozhanov.tickets.R;
 import com.zabozhanov.tickets.models.Event;
+import com.zabozhanov.tickets.models.Ticket;
+import com.zabozhanov.tickets.models.TicketScanResult;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 
 public class EventViewFragment extends BaseFragment {
 
@@ -30,11 +35,13 @@ public class EventViewFragment extends BaseFragment {
     @BindView(R.id.txtTicketsCount)
     public TextView txtTicketsCount;
 
-    @BindView(R.id.txtBegins)
+    @BindView(R.id.txtAddress)
     public TextView txtAddress;
 
     private OnFragmentInteractionListener mListener;
     private String eventName;
+
+    private RealmResults<TicketScanResult> scanResults;
 
     public EventViewFragment() {
     }
@@ -62,9 +69,10 @@ public class EventViewFragment extends BaseFragment {
         view.findViewById(R.id.btnStartChecking).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                getMainActivity().pushFragment(TicketsFragment.newInstance(eventName));
             }
         });
+        ButterKnife.bind(this, view);
         return view;
     }
 
@@ -72,7 +80,23 @@ public class EventViewFragment extends BaseFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.event = getMainActivity().getRealm().where(Event.class).equalTo("name", eventName).findFirst();
+
+        scanResults = getMainActivity().getRealm().where(TicketScanResult.class).
+                equalTo("ticket.event.name", eventName).equalTo("ticketScanResult", Ticket.STATE_IN).findAllAsync();
+        scanResults.addChangeListener(new RealmChangeListener<RealmResults<TicketScanResult>>() {
+            @Override
+            public void onChange(RealmResults<TicketScanResult> element) {
+                txtTicketsCount.setText(String.format("Продано %s билетов", element.size()));
+            }
+        });
+
         Log.d("tag", event.getName());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        scanResults.removeChangeListeners();
     }
 
     // TODO: Rename method, update argument and hook method into UI event

@@ -1,13 +1,13 @@
-package com.zabozhanov.tickets.fragments;
+package com.zabozhanov.tickets.adapters;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.zabozhanov.tickets.R;
+import com.zabozhanov.tickets.fragments.EventsFragment;
 import com.zabozhanov.tickets.models.Event;
 
 import butterknife.BindView;
@@ -26,9 +26,9 @@ public class MyEventRecyclerViewAdapter extends RecyclerView.Adapter<MyEventRecy
         this.mValues = mValues;
     }
 
-    private final EventFragment.OnListFragmentInteractionListener mListener;
+    private final EventsFragment.OnListFragmentInteractionListener mListener;
 
-    public MyEventRecyclerViewAdapter(EventFragment.OnListFragmentInteractionListener listener) {
+    public MyEventRecyclerViewAdapter(EventsFragment.OnListFragmentInteractionListener listener) {
         mListener = listener;
     }
 
@@ -44,6 +44,7 @@ public class MyEventRecyclerViewAdapter extends RecyclerView.Adapter<MyEventRecy
         holder.mItem = mValues.get(position);
 
         holder.txtEventName.setText(holder.mItem.getName());
+        holder.txtTicketsCount.setText(String.format("Загружено %s билетов", holder.mItem.getTickets().size()));
         //holder.mContentView.setText(mValues.get(position).content);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {

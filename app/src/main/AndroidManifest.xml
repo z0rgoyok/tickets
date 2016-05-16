@@ -23,8 +23,12 @@
         </activity>
 
         <service
-            android:name=".ParseService"
-            android:exported="false"></service>
+            android:name=".services.ParseService"
+            android:exported="false" />
+        <service
+            android:name=".services.FakeScanResultsService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

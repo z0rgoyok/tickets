@@ -2,7 +2,6 @@ package com.zabozhanov.tickets.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zabozhanov.tickets.R;
+import com.zabozhanov.tickets.adapters.MyEventRecyclerViewAdapter;
 import com.zabozhanov.tickets.models.Event;
 
 import io.realm.Realm;
@@ -22,18 +22,18 @@ import io.realm.RealmResults;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class EventFragment extends BaseFragment {
+public class EventsFragment extends BaseFragment {
     private OnListFragmentInteractionListener mListener;
     private MyEventRecyclerViewAdapter adapter;
 
-    public EventFragment() {
+    public EventsFragment() {
     }
 
     private Realm realm;
 
     @SuppressWarnings("unused")
-    public static EventFragment newInstance() {
-        EventFragment fragment = new EventFragment();
+    public static EventsFragment newInstance() {
+        EventsFragment fragment = new EventsFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;

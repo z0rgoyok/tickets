@@ -1,4 +1,4 @@
-package com.zabozhanov.tickets;
+package com.zabozhanov.tickets.services;
 
 import android.app.IntentService;
 import android.app.Service;
