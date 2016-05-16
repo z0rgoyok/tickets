@@ -86,7 +86,7 @@ public class EventViewFragment extends BaseFragment {
         scanResults.addChangeListener(new RealmChangeListener<RealmResults<TicketScanResult>>() {
             @Override
             public void onChange(RealmResults<TicketScanResult> element) {
-                txtTicketsCount.setText(String.format("Продано %s билетов", element.size()));
+                txtTicketsCount.setText(String.format(getMainActivity().getString(R.string.sold_number_tickets), element.size()));
             }
         });
 

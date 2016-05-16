@@ -29,6 +29,10 @@
             android:name=".services.FakeScanResultsService"
             android:enabled="true"
             android:exported="true"></service>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="338ee464faaabc43c884b214893c3b6a7489dc5b" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
