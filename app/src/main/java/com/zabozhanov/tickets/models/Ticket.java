@@ -9,6 +9,10 @@ import io.realm.annotations.PrimaryKey;
  */
 public class Ticket extends RealmObject {
 
+    public static final int STATE_NEW = 0;
+    public static final int STATE_IN = 1;
+    public static final int STATE_OUT = 2;
+
     @PrimaryKey
     private long id;
 
@@ -19,6 +23,26 @@ public class Ticket extends RealmObject {
     private Event event;
 
     private String direction;
+
+    private int state = STATE_NEW;
+
+    private boolean sold;
+
+    public boolean isSold() {
+        return sold;
+    }
+
+    public void setSold(boolean sold) {
+        this.sold = sold;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
 
     public String getDirection() {
         return direction;

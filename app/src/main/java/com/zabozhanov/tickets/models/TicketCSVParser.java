@@ -2,6 +2,8 @@ package com.zabozhanov.tickets.models;
 
 import android.util.Log;
 
+import com.zabozhanov.tickets.TicketApp;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +14,7 @@ import java.util.Map;
 import io.realm.Realm;
 import io.realm.RealmAsyncTask;
 import io.realm.RealmResults;
+import io.realm.exceptions.RealmPrimaryKeyConstraintException;
 
 /**
  * Created by z0rgoyok on 14.05.16.
@@ -56,8 +59,13 @@ public class TicketCSVParser {
                         //Log.d("READ", "Read: " + readBytes + ", total: " + file + ", percentage: " + percent);
                         String[] fields = line.split(";");
 
-                        Ticket ticket = new Ticket();
-                        ticket.setId(Long.parseLong(fields[0]));
+                        Ticket ticket = null;
+                        try {
+                            ticket = realm.createObject(Ticket.class);
+                            ticket.setId(Long.parseLong(fields[0]));
+                        } catch (RealmPrimaryKeyConstraintException exception) {
+                            continue;
+                        }
                         ticket.setCost(Integer.parseInt(fields[1]));
                         ticket.setDirection(fields[2]);
                         ticket.setType(fields[3]);

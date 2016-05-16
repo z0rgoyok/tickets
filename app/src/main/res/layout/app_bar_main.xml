@@ -8,6 +8,7 @@
     tools:context="com.zabozhanov.tickets.MainActivity">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -22,6 +23,7 @@
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_main" />
+
 <!--
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

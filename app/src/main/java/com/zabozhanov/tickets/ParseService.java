@@ -76,11 +76,13 @@ public class ParseService extends Service {
             @Override
             public void finish() {
                 postSticky(new ParseServiceEvent(false, true));
+                ParseService.this.stopSelf();
             }
 
             @Override
             public void error(Throwable error) {
                 postSticky(new ParseServiceEvent(true, true));
+                ParseService.this.stopSelf();
             }
 
             private void postSticky(ParseServiceEvent event) {

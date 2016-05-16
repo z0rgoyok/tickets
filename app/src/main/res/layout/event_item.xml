@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp"
+    android:id="@+id/container"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/txtEventName"
+        style="@android:style/TextAppearance.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="'Король и шут'" />
+
+    <TextView
+        android:layout_marginTop="2dp"
+        android:id="@+id/txtEventTimePlace"
+        style="@android:style/TextAppearance.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Москва, 19 апреля, 21-30" />
+
+    <TextView
+        android:layout_marginTop="2dp"
+        android:id="@+id/txtTicketsCount"
+        style="@android:style/TextAppearance.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Загружено 1200 билетов" />
+
+    <TextView
+        android:layout_marginTop="2dp"
+        android:id="@+id/txtBegins"
+        style="@android:style/TextAppearance.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="До начала осталось" />
 
 </LinearLayout>

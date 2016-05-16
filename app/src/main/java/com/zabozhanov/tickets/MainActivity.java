@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,6 +18,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zabozhanov.tickets.fragments.EventFragment;
 import com.zabozhanov.tickets.models.Event;
 import com.zabozhanov.tickets.models.Ticket;
 
@@ -37,10 +40,13 @@ public class MainActivity extends AppCompatActivity
     private ProgressDialog parsingProgressDialog;
 
     //todo: для тестирования обновляемой выборки
-    @BindView(R.id.txt_tickets_count) TextView txtTicketsCount;
-
+    //@BindView(R.id.txt_tickets_count) TextView txtTicketsCount;
 
     private Realm realm;
+
+    public Realm getRealm() {
+        return realm;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +69,10 @@ public class MainActivity extends AppCompatActivity
         realm = Realm.getDefaultInstance();
         RealmResults<Ticket> tickets = realm.where(Ticket.class).findAll();
         RealmResults<Event> events = realm.where(Event.class).findAll();
-        txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
+        //txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
+
+        EventFragment fragment = EventFragment.newInstance();
+        changeFragment(fragment);
     }
 
     @Override
@@ -98,6 +107,10 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+
         if (id == R.id.nav_events_list) {
 
         } else if (id == R.id.nav_import_data) {
@@ -107,10 +120,9 @@ public class MainActivity extends AppCompatActivity
             File f = new File(path);
             intent.putExtra(ParseService.EXTRA_PATH, path);
             startService(intent);
+            return false;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
@@ -151,7 +163,7 @@ public class MainActivity extends AppCompatActivity
 
             RealmResults<Ticket> tickets = realm.where(Ticket.class).findAll();
             RealmResults<Event> events = realm.where(Event.class).findAll();
-            txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
+            //txtTicketsCount.setText("Items count: " + tickets.size() + ", events: " + events.size());
 
             return;
         }
@@ -167,5 +179,16 @@ public class MainActivity extends AppCompatActivity
         parsingProgressDialog.setTitle(getString(R.string.parsing_data_title));
         parsingProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         parsingProgressDialog.show();
+    }
+
+
+    private void changeFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.container, fragment).commit();
+    }
+
+    public void pushFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.container, fragment).addToBackStack(fragmentManager.toString()).commit();
     }
 }
