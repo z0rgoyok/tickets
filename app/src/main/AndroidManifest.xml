@@ -3,6 +3,7 @@
     package="com.zabozhanov.tickets">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".TicketApp"
@@ -17,9 +18,16 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
 
         <service
@@ -28,11 +36,16 @@
         <service
             android:name=".services.FakeScanResultsService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="338ee464faaabc43c884b214893c3b6a7489dc5b" />
+
+        <service
+            android:name=".services.DeviceService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -13,6 +13,7 @@ public class Ticket extends RealmObject {
     public static final int STATE_IN = 1;
     public static final int STATE_OUT = 2;
 
+    //todo: не забыть сделать неуникальным (уникальный в рамках мероприятия)
     @PrimaryKey
     private long id;
 

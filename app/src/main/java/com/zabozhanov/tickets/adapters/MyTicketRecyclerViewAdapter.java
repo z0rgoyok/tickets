@@ -49,6 +49,7 @@ public class MyTicketRecyclerViewAdapter extends RecyclerView.Adapter<MyTicketRe
         holder.item = mValues.get(position);
 
         holder.txtTicketNumber.setText(String.valueOf(holder.item.getTicket().getId()));
+        holder.txtTicketDevice.setText(String.valueOf(holder.item.getDeviceID()));
 
         /*holder.mIdView.setText(mValues.get(position).id);
         holder.mContentView.setText(mValues.get(position).content);*/
@@ -75,6 +76,9 @@ public class MyTicketRecyclerViewAdapter extends RecyclerView.Adapter<MyTicketRe
         public View mContainer;
         @BindView(R.id.txtTicketNumber)
         public TextView txtTicketNumber;
+
+        @BindView(R.id.txtTicketDevice)
+        public TextView txtTicketDevice;
 
         public ViewHolder(View view) {
             super(view);
