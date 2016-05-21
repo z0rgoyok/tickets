@@ -7,8 +7,10 @@ import android.hardware.usb.UsbManager;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.zabozhanov.tickets.models.TicketScanResult;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -21,6 +23,7 @@ public class DeviceConnection implements IConnection {
     private UsbSerialDriver driver;
     private UsbDeviceConnection connection;
     private int deviceID;
+    private UsbSerialPort port;
 
     public boolean initConnection(Context context, int deviceID) {
         this.deviceID = deviceID;
@@ -31,10 +34,26 @@ public class DeviceConnection implements IConnection {
         }
         driver = availableDrivers.get(0);
         connection = manager.openDevice(driver.getDevice());
-        if (connection == null) {
+        try {
+            port = driver.getPorts().get(0);
+            port.open(connection);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (connection == null || port == null) {
             return false;
         }
         return true;
+    }
+
+    public void close() {
+        try {
+            port.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean writePackage(Package p) {
@@ -48,37 +67,69 @@ public class DeviceConnection implements IConnection {
         return true;
     }
 
-    private void writeData(byte[] bytes) throws Exception {
-        if (driver == null || connection == null) {
+    private int writeData(byte[] bytes) throws Exception {
+        if (driver == null || connection == null || port == null) {
             throw new Exception("Init it first");
         }
-        UsbSerialPort port = driver.getPorts().get(0);
-        port.open(connection);
         try {
-            //byte buffer[] = new byte[16];
-            //int numBytesRead = port.read(buffer, 1000);
-
             int numBytesWrite = port.write(bytes, WRITE_TIMEOUT);
-
+            return numBytesWrite;
         } catch (IOException e) {
             // Deal with error.
-        } finally {
-            port.close();
+            return -1;
         }
     }
 
     private byte[] makePackageData(Package p) {
-
         //составляем данные пакета
-        //
-        int resultsCount = p.results.size();
-
         //отправляем
+        //заголовок 0x3
+        //массив таких данных
         //device_id(1) + time(8) + ticket_number(8) + type(1)
+        //конец \r\b
+        int itemLengthInBytes = 4 + 8 + 8 + 1 + 2; //deviceID, time, ticked_id, type, \r\n
+        long time = System.currentTimeMillis();
+        ByteBuffer buffer = ByteBuffer.allocate(1 + p.results.size() * itemLengthInBytes + 2);
+        byte type = 1;
+        buffer.put((byte) 3);
+        for (TicketScanResult result : p.results) {
+            byte[] bytes = ByteBuffer.allocate(itemLengthInBytes).
+                    putInt(deviceID).
+                    putLong(time).
+                    putLong(result.getTicket().getId()).
+                    put(type).array();
+            buffer.put(bytes);
+        }
+        buffer.putChar('\r');
+        buffer.putChar('\n');
+        return buffer.array();
+    }
 
-        byte[] bytes = new byte[1024];
+    /**
+     * Блокирующий метод
+     *
+     * @return
+     */
+    public TicketScanResult readResult() {
+        byte[] lineEnd = {'\r', '\n'};
+        ByteBuffer store = ByteBuffer.allocate(100 * 1000 * 1000); //100kb
 
-        return bytes;
+        byte[] buffer = new byte[1024];
+        try {
+            int readCount = port.read(buffer, 1000);
+
+            store.put(buffer);
+
+            for (int i = 0; i < readCount - 1; i++) {
+                if (buffer[i] == '\r' && buffer[i + 1] == '\n') {
+                    //получили конец строки
+
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }
