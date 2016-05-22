@@ -24,6 +24,7 @@ public class DeviceConnection implements IConnection {
     private UsbDeviceConnection connection;
     private int deviceID;
     private UsbSerialPort port;
+    private ByteBuffer store;
 
     public boolean initConnection(Context context, int deviceID) {
         this.deviceID = deviceID;
@@ -45,6 +46,9 @@ public class DeviceConnection implements IConnection {
         if (connection == null || port == null) {
             return false;
         }
+
+        store = ByteBuffer.allocate(100 * 1000 * 1000);
+
         return true;
     }
 
@@ -58,8 +62,13 @@ public class DeviceConnection implements IConnection {
 
     public boolean writePackage(Package p) {
         byte[] bytes = makePackageData(p);
+
+        ByteBuffer buffer = ByteBuffer.allocate(1 + bytes.length);
+        buffer.put((byte) 3);
+        buffer.put(bytes);
+
         try {
-            writeData(bytes);
+            writeData(buffer.array());
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
@@ -85,7 +94,7 @@ public class DeviceConnection implements IConnection {
         //отправляем
         //заголовок 0x3
         //массив таких данных
-        //device_id(1) + time(8) + ticket_number(8) + type(1)
+        //device_id(1) + time(8) + ticket_number(8) + scanNumber + type(1)
         //конец \r\b
         int itemLengthInBytes = 4 + 8 + 8 + 1 + 2; //deviceID, time, ticked_id, type, \r\n
         long time = System.currentTimeMillis();
@@ -97,7 +106,8 @@ public class DeviceConnection implements IConnection {
                     putInt(deviceID).
                     putLong(time).
                     putLong(result.getTicket().getId()).
-                    put(type).array();
+                    //putLong(result.get)
+                            put(type).array();
             buffer.put(bytes);
         }
         buffer.putChar('\r');
@@ -110,26 +120,51 @@ public class DeviceConnection implements IConnection {
      *
      * @return
      */
-    public TicketScanResult readResult() {
+    public DeviceTicket readResult() {
         byte[] lineEnd = {'\r', '\n'};
-        ByteBuffer store = ByteBuffer.allocate(100 * 1000 * 1000); //100kb
-
         byte[] buffer = new byte[1024];
         try {
             int readCount = port.read(buffer, 1000);
-
             store.put(buffer);
-
             for (int i = 0; i < readCount - 1; i++) {
                 if (buffer[i] == '\r' && buffer[i + 1] == '\n') {
                     //получили конец строки
-
+                    //копируем от начала до этой позиции вместе с переносом
+                    //удаляем из буффера (большого) все до этой позиции + 2 = ждем новую строку
+                    //копируем из буффера все с этой позиции +2
+                    byte[] line = new byte[store.position() + i + 2];
+                    store.position(0);
+                    store.get(line);
+                    removeBytesFromStart(store, line.length);
+                    //в line теперь строка с переносом, надо разобрать
+                    ByteBuffer lineBuffer = ByteBuffer.allocate(line.length);
+                    lineBuffer.put(line);
+                    byte msgType = lineBuffer.get();
+                    byte deviceId = lineBuffer.get();
+                    long timestamp = lineBuffer.getLong();
+                    long tickedId = lineBuffer.getLong();
+                    byte ticketType = lineBuffer.get();
+                    DeviceTicket ticket = new DeviceTicket();
+                    ticket.deviceId = deviceId;
+                    ticket.timestamp = timestamp;
+                    ticket.ticketType = ticketType;
+                    ticket.ticketId = tickedId;
+                    return ticket;
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
+        return null;
     }
 
+    public void removeBytesFromStart(ByteBuffer bf, int n) {
+        int index = 0;
+        for (int i = n; i < bf.position(); i++) {
+            bf.put(index++, bf.get(i));
+            bf.put(i, (byte) 0);
+        }
+        bf.position(index);
+    }
 }
