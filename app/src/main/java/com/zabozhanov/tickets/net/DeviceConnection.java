@@ -31,6 +31,7 @@ public class DeviceConnection implements IConnection {
     private UsbSerialPort port;
     private ByteBuffer store;
     private boolean canceled;
+    private long readCountAll = 0;
 
     private List<TicketScanResult> writeQueue = new ArrayList<>();
     //private Realm realm;
@@ -128,9 +129,10 @@ public class DeviceConnection implements IConnection {
     }
 
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
+        for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
@@ -151,13 +153,15 @@ public class DeviceConnection implements IConnection {
             try {
                 readCount = port.read(buffer, 1000);
                 store.put(buffer, 0, readCount);
+                readCountAll += readCount;
+
+                if (readCount > 0) {
+                    //печатаем вывод
+                    Log.d("hex", bytesToHex(buffer));
+                }
+
             } catch (Exception ex) {
                 ex.printStackTrace();
-            }
-
-            if (readCount > 0) {
-                //печатаем вывод
-                Log.d("hex", bytesToHex(store.array()));
             }
 
             for (int i = 0; i < readCount - 1; i++) {
@@ -240,7 +244,6 @@ public class DeviceConnection implements IConnection {
         }
         bf.position(index);
     }
-
 
 
     public void deviceProcessing() {
