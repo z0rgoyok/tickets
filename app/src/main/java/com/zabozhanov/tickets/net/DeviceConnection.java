@@ -225,7 +225,7 @@ public class DeviceConnection implements IConnection {
                     return null;
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
