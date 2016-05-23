@@ -34,7 +34,7 @@ public class DeviceService extends Service {
                     //читаем читаем, если есть что записать - пишем
                     connection.deviceProcessing();
                 }
-            }).run();
+            }).start();
         }
 
         return super.onStartCommand(intent, flags, startId);
