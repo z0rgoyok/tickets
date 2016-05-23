@@ -46,10 +46,14 @@
 
 
     <Button
+        android:background="@drawable/blue_btn"
         android:id="@+id/btnStartChecking"
         android:text="@string/start_event"
+        android:textColor="@android:color/white"
         android:layout_marginBottom="30dp"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+
 </RelativeLayout>

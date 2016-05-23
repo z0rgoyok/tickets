@@ -1,7 +1,8 @@
-package com.zabozhanov.tickets;
+package com.zabozhanov.tickets.ui;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.NavigationView;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.zabozhanov.tickets.R;
 import com.zabozhanov.tickets.fragments.EventsFragment;
 import com.zabozhanov.tickets.models.Event;
 import com.zabozhanov.tickets.models.Ticket;
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(Color.argb(255, 0, 0, 0));
         setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

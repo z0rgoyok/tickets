@@ -32,6 +32,7 @@ public class DeviceService extends Service {
                 //тут осуществляется весь обмен данными
 
 
+
             }
         }).run();
 

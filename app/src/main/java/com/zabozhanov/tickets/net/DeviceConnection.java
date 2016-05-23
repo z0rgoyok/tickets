@@ -140,16 +140,24 @@ public class DeviceConnection implements IConnection {
                     ByteBuffer lineBuffer = ByteBuffer.allocate(line.length);
                     lineBuffer.put(line);
                     byte msgType = lineBuffer.get();
-                    byte deviceId = lineBuffer.get();
-                    long timestamp = lineBuffer.getLong();
-                    long tickedId = lineBuffer.getLong();
-                    byte ticketType = lineBuffer.get();
-                    DeviceTicket ticket = new DeviceTicket();
-                    ticket.deviceId = deviceId;
-                    ticket.timestamp = timestamp;
-                    ticket.ticketType = ticketType;
-                    ticket.ticketId = tickedId;
-                    return ticket;
+
+                    if (msgType == 3) { //получили от другого устройства
+                        byte deviceId = lineBuffer.get();
+                        long timestamp = lineBuffer.getLong();
+                        long tickedId = lineBuffer.getLong();
+                        byte ticketType = lineBuffer.get();
+
+
+                        DeviceTicket ticket = new DeviceTicket();
+                        ticket.deviceId = deviceId;
+                        ticket.timestamp = timestamp;
+                        ticket.ticketType = ticketType;
+                        ticket.ticketId = tickedId;
+                        return ticket;
+                    } else if (msgType == 2) { //получили от себя
+
+                    }
+                    return null;
                 }
             }
         } catch (IOException e) {
@@ -159,7 +167,7 @@ public class DeviceConnection implements IConnection {
         return null;
     }
 
-    public void removeBytesFromStart(ByteBuffer bf, int n) {
+    private void removeBytesFromStart(ByteBuffer bf, int n) {
         int index = 0;
         for (int i = n; i < bf.position(); i++) {
             bf.put(index++, bf.get(i));
