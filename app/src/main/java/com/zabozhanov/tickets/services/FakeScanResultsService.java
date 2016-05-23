@@ -45,13 +45,18 @@ public class FakeScanResultsService extends Service {
         connection = new DeviceConnection();
         connection.initConnection(this, 1);
         realm = Realm.getDefaultInstance();
+
+        if (intent == null) {
+            return super.onStartCommand(intent, flags, startId);
+        }
+
         final String eventName = intent.getStringExtra(EXTRA_EVENT);
         Event event = realm.where(Event.class).equalTo("name", eventName).findFirst();
         final List<Ticket> tickets = new ArrayList<>();
 
         int size = event.getTickets().size();
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < size; i++) {
             int randomIndex = Math.abs(new Random().nextInt()) % size;
             Ticket ticket = event.getTickets().get(randomIndex);
             if (ticket != null) {
@@ -70,10 +75,9 @@ public class FakeScanResultsService extends Service {
                 result.setTicketScanResult(Ticket.STATE_IN);
                 realm.commitTransaction();
 
-                com.zabozhanov.tickets.net.Package p = new Package();
+                /*com.zabozhanov.tickets.net.Package p = new Package();
                 p.getResults().add(result);
-
-                connection.writePackage(p);
+                connection.writePackage(p);*/
 
                 if (tickets.size() > 0) {
                     handler.postDelayed(this, 1500);
