@@ -144,14 +144,20 @@ public class DeviceConnection implements IConnection {
      * @return
      */
     public DeviceTicket readResult() {
-        byte[] buffer = new byte[1024];
+        int maxSize = 64;
+        byte[] buffer = new byte[maxSize];
         try {
-            int readCount = port.read(buffer, 1000);
-            store.put(buffer);
+            int readCount = 0;
+            try {
+                readCount = port.read(buffer, 1000);
+                store.put(buffer, 0, readCount);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
 
             if (readCount > 0) {
                 //печатаем вывод
-                Log.d("hex", bytesToHex(buffer));
+                Log.d("hex", bytesToHex(store.array()));
             }
 
             for (int i = 0; i < readCount - 1; i++) {
