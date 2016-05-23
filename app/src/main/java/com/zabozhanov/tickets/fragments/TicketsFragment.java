@@ -13,6 +13,7 @@ import com.zabozhanov.tickets.R;
 import com.zabozhanov.tickets.adapters.MyTicketRecyclerViewAdapter;
 import com.zabozhanov.tickets.models.Event;
 import com.zabozhanov.tickets.models.TicketScanResult;
+import com.zabozhanov.tickets.services.DeviceService;
 import com.zabozhanov.tickets.services.FakeScanResultsService;
 
 import io.realm.RealmChangeListener;
@@ -84,9 +85,9 @@ public class TicketsFragment extends BaseFragment {
             }
         });
 
-        Intent intent = new Intent(getMainActivity(), FakeScanResultsService.class);
-        intent.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
-        intent.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);
+        Intent intent = new Intent(getMainActivity(), DeviceService.class);
+        /*intent.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
+        intent.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);*/
         getMainActivity().startService(intent);
     }
 

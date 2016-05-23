@@ -3,15 +3,20 @@ package com.zabozhanov.tickets.net;
 import android.content.Context;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.zabozhanov.tickets.models.Ticket;
 import com.zabozhanov.tickets.models.TicketScanResult;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.Realm;
 
 /**
  * Created by z0rgoyok on 18.05.16.
@@ -25,14 +30,20 @@ public class DeviceConnection implements IConnection {
     private int deviceID;
     private UsbSerialPort port;
     private ByteBuffer store;
+    private boolean canceled;
+
+    private List<TicketScanResult> writeQueue = new ArrayList<>();
+    //private Realm realm;
 
     public boolean initConnection(Context context, int deviceID) {
         this.deviceID = deviceID;
         UsbManager manager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+        //realm = Realm.getDefaultInstance();
         if (availableDrivers.isEmpty()) {
             return false;
         }
+
         driver = availableDrivers.get(0);
         connection = manager.openDevice(driver.getDevice());
         try {
@@ -54,6 +65,7 @@ public class DeviceConnection implements IConnection {
 
     public void close() {
         try {
+            canceled = true;
             port.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -121,7 +133,6 @@ public class DeviceConnection implements IConnection {
      * @return
      */
     public DeviceTicket readResult() {
-        byte[] lineEnd = {'\r', '\n'};
         byte[] buffer = new byte[1024];
         try {
             int readCount = port.read(buffer, 1000);
@@ -136,26 +147,57 @@ public class DeviceConnection implements IConnection {
                     store.position(0);
                     store.get(line);
                     removeBytesFromStart(store, line.length);
+
+
                     //в line теперь строка с переносом, надо разобрать
                     ByteBuffer lineBuffer = ByteBuffer.allocate(line.length);
                     lineBuffer.put(line);
+
                     byte msgType = lineBuffer.get();
 
+
                     if (msgType == 3) { //получили от другого устройства
+                        //надо сохранить
                         byte deviceId = lineBuffer.get();
                         long timestamp = lineBuffer.getLong();
                         long tickedId = lineBuffer.getLong();
                         byte ticketType = lineBuffer.get();
-
 
                         DeviceTicket ticket = new DeviceTicket();
                         ticket.deviceId = deviceId;
                         ticket.timestamp = timestamp;
                         ticket.ticketType = ticketType;
                         ticket.ticketId = tickedId;
-                        return ticket;
+                        Log.d("tag", "received");
+
+
+                        //Log.d("")
+
+                        /*Ticket scannedTicket = realm.where(Ticket.class)
+                                .equalTo("id", tickedId)
+                                .findFirst();
+
+                        if (scannedTicket == null) {
+                            return null;
+                        }
+
+                        realm.beginTransaction();
+                        TicketScanResult result = new TicketScanResult();
+                        result.setTicket(scannedTicket);
+                        result.setTimestamp(timestamp);
+                        result.setDeviceID(deviceId);
+                        result.setTicketScanResult(ticketType);
+                        realm.commitTransaction();*/
+
                     } else if (msgType == 2) { //получили от себя
 
+                        Log.d("tag", "scanned");
+                        //надо записать
+                        /*TicketScanResult ticketScanResult = realm.createObject(TicketScanResult.class);
+                        result.setTicket(scannedTicket);
+                        result.setTimestamp(timestamp);
+                        result.setDeviceID(deviceId);
+                        result.setTicketScanResult(ticketType);*/
                     }
                     return null;
                 }
@@ -174,5 +216,23 @@ public class DeviceConnection implements IConnection {
             bf.put(i, (byte) 0);
         }
         bf.position(index);
+    }
+
+
+
+    public void deviceProcessing() {
+        while (!canceled) {
+            if (writeQueue.size() > 0) { //тут еще проверку на минимальное число сканирований для пакета
+                //есть что записать - пишем пока не запишем
+                Package p = new Package();
+                for (TicketScanResult result : writeQueue) {
+                    p.getResults().add(result);
+                }
+                writePackage(p);
+            } else {
+                //читаем
+                readResult();
+            }
+        }
     }
 }

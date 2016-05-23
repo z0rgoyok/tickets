@@ -24,17 +24,18 @@ public class DeviceService extends Service {
         deviceID = intent.getByteExtra("device_id", (byte) 0);
 
         connection = new DeviceConnection();
-        connection.initConnection(this, deviceID);
+        boolean result = connection.initConnection(this, deviceID);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //тут осуществляется весь обмен данными
-
-
-
-            }
-        }).run();
+        if (result) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //тут осуществляется весь обмен данными
+                    //читаем читаем, если есть что записать - пишем
+                    connection.deviceProcessing();
+                }
+            }).run();
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
