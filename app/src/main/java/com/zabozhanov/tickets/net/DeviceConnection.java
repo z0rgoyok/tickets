@@ -127,6 +127,17 @@ public class DeviceConnection implements IConnection {
         return buffer.array();
     }
 
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     /**
      * Блокирующий метод
      *
@@ -137,6 +148,12 @@ public class DeviceConnection implements IConnection {
         try {
             int readCount = port.read(buffer, 1000);
             store.put(buffer);
+
+            if (readCount > 0) {
+                //печатаем вывод
+                Log.d("hex", bytesToHex(buffer));
+            }
+
             for (int i = 0; i < readCount - 1; i++) {
                 if (buffer[i] == '\r' && buffer[i + 1] == '\n') {
                     //получили конец строки
