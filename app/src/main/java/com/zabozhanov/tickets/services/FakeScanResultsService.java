@@ -42,8 +42,8 @@ public class FakeScanResultsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        connection = new DeviceConnection();
-        connection.initConnection(this, 1);
+        /*connection = new DeviceConnection();
+        connection.initConnection(this, 1);*/
         realm = Realm.getDefaultInstance();
 
         if (intent == null) {

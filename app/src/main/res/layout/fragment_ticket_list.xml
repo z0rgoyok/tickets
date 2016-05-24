@@ -25,12 +25,11 @@
 
 
     <TextView
-        android:text="str1"
         android:textSize="10dp"
         android:id="@+id/txtLog"
         android:background="#cccccc"
         android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="0d" />
+        android:layout_height="0dp" />
 
 </LinearLayout>

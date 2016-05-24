@@ -105,7 +105,7 @@ public class TicketsFragment extends BaseFragment {
         });
 
         Intent intent = new Intent(getMainActivity(), DeviceService.class);
-        Intent intentFake = new Intent(getMainActivity(), DeviceService.class);
+        Intent intentFake = new Intent(getMainActivity(), FakeScanResultsService.class);
         intentFake.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
         intentFake.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);
 
