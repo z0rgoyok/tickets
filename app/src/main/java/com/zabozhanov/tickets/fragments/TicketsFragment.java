@@ -91,6 +91,8 @@ public class TicketsFragment extends BaseFragment {
         txtLog.setText(txtLog.getText() + "\n" + event.text);
     }
 
+
+    private boolean servicesStared = false;
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -104,13 +106,17 @@ public class TicketsFragment extends BaseFragment {
             }
         });
 
-        Intent intent = new Intent(getMainActivity(), DeviceService.class);
-        Intent intentFake = new Intent(getMainActivity(), FakeScanResultsService.class);
-        intentFake.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
-        intentFake.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);
+        if (!servicesStared) {
+            servicesStared = true;
+            
+            Intent intent = new Intent(getMainActivity(), DeviceService.class);
+            Intent intentFake = new Intent(getMainActivity(), FakeScanResultsService.class);
+            intentFake.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
+            intentFake.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);
 
-        getMainActivity().startService(intent);
-        getMainActivity().startService(intentFake);
+            getMainActivity().startService(intent);
+            getMainActivity().startService(intentFake);
+        }
     }
 
     private void reloadData(RealmResults<TicketScanResult> items) {
