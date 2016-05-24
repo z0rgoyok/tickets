@@ -66,7 +66,7 @@ public class DeviceConnection implements IConnection {
             return false;
         }
 
-        store = ByteBuffer.allocate(100 * 1000 * 1000);
+        store = ByteBuffer.allocate(100000);
 
         return true;
     }
