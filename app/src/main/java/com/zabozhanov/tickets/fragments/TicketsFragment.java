@@ -8,13 +8,19 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.zabozhanov.tickets.R;
 import com.zabozhanov.tickets.adapters.MyTicketRecyclerViewAdapter;
 import com.zabozhanov.tickets.models.Event;
+import com.zabozhanov.tickets.models.StringBufferEvent;
 import com.zabozhanov.tickets.models.TicketScanResult;
 import com.zabozhanov.tickets.services.DeviceService;
 import com.zabozhanov.tickets.services.FakeScanResultsService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
@@ -28,6 +34,7 @@ public class TicketsFragment extends BaseFragment {
     private String eventName;
     private RealmResults<TicketScanResult> tickets;
     private MyTicketRecyclerViewAdapter adapter;
+    private TextView txtLog;
 
     public TicketsFragment() {
     }
@@ -57,9 +64,13 @@ public class TicketsFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ticket_list, container, false);
         // Set the adapter
-        if (view instanceof RecyclerView) {
+
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycleview);
+        txtLog = (TextView) view.findViewById(R.id.txtLog);
+
+        //if (view instanceof RecyclerView)
+        {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             adapter = new MyTicketRecyclerViewAdapter(new OnListFragmentInteractionListener() {
                 @Override
@@ -69,7 +80,15 @@ public class TicketsFragment extends BaseFragment {
             });
             recyclerView.setAdapter(adapter);
         }
+
+
         return view;
+    }
+
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void bufferStringReceived(StringBufferEvent event) {
+        txtLog.setText(txtLog.getText() + "\n" + event.text);
     }
 
     @Override
@@ -86,9 +105,12 @@ public class TicketsFragment extends BaseFragment {
         });
 
         Intent intent = new Intent(getMainActivity(), DeviceService.class);
-        /*intent.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
-        intent.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);*/
+        Intent intentFake = new Intent(getMainActivity(), DeviceService.class);
+        intentFake.setAction(FakeScanResultsService.ACTION_INSERT_FAKE_RESULT);
+        intentFake.putExtra(FakeScanResultsService.EXTRA_EVENT, eventName);
+
         getMainActivity().startService(intent);
+        getMainActivity().startService(intentFake);
     }
 
     private void reloadData(RealmResults<TicketScanResult> items) {
@@ -121,5 +143,18 @@ public class TicketsFragment extends BaseFragment {
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(TicketScanResult item);
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 }

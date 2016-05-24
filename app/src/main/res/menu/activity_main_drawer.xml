@@ -5,13 +5,31 @@
         <item
             android:checked="true"
             android:id="@+id/nav_events_list"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_events_list"
             android:title="@string/events_list" />
+        <item
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/scan" />
+
+        <item
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/statistics" />
+
+        <item
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/scan_log" />
 
         <item
             android:id="@+id/nav_import_data"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="@string/data_import" />
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/tickets_parse" />
+
+        <item
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/search" />
+        <item
+            android:icon="@drawable/ic_scanner"
+            android:title="@string/exit" />
 
     </group>
 

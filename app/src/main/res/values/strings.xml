@@ -16,5 +16,11 @@
     <string name="start_event">Начать проверку</string>
     <string name="sold_number_tickets">Продано %s билетов</string>
     <string name="title_activity_launcher">TicketsCloud</string>
+    <string name="scan">Сканирование</string>
+    <string name="statistics">Статистика</string>
+    <string name="scan_log">История сканирования</string>
+    <string name="tickets_parse">Загрузка билетов</string>
+    <string name="search">Поиск</string>
+    <string name="exit">Выход</string>
 
 </resources>

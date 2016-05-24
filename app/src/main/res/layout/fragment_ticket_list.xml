@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/list"
     android:name="com.zabozhanov.tickets.fragments.TicketFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    android:weightSum="3"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".fragments.TicketsFragment"
-    tools:listitem="@layout/fragment_ticket" />
+    tools:context=".fragments.TicketsFragment">
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycleview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2">
+
+    </android.support.v7.widget.RecyclerView>
+
+
+    <TextView
+        android:text="str1"
+        android:textSize="10dp"
+        android:id="@+id/txtLog"
+        android:background="#cccccc"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0d" />
+
+</LinearLayout>

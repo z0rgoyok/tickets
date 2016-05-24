@@ -16,18 +16,18 @@
 
 
     <LinearLayout
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="TicketsCloud"
-            android:textSize="32dp"
-            android:textStyle="bold" />
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ic_logo" />
 
 
         <TextView

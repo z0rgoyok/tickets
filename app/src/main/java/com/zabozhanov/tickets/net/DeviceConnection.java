@@ -8,15 +8,16 @@ import android.util.Log;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
-import com.zabozhanov.tickets.models.Ticket;
+import com.zabozhanov.tickets.TicketApp;
+import com.zabozhanov.tickets.models.StringBufferEvent;
 import com.zabozhanov.tickets.models.TicketScanResult;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.realm.Realm;
 
 /**
  * Created by z0rgoyok on 18.05.16.
@@ -38,8 +39,10 @@ public class DeviceConnection implements IConnection {
 
     public boolean initConnection(Context context, int deviceID) {
         this.deviceID = deviceID;
+
         UsbManager manager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+
         //realm = Realm.getDefaultInstance();
         if (availableDrivers.isEmpty()) {
             return false;
@@ -50,6 +53,10 @@ public class DeviceConnection implements IConnection {
         try {
             port = driver.getPorts().get(0);
             port.open(connection);
+            port.setParameters(UsbSerialPort.PORT_SPEED, 8,
+                    UsbSerialPort.STOPBITS_1,
+                    UsbSerialPort.PARITY_NONE);
+
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -158,6 +165,17 @@ public class DeviceConnection implements IConnection {
                 if (readCount > 0) {
                     //печатаем вывод
                     Log.d("hex", bytesToHex(buffer));
+
+                    final byte[] notNullPart = new byte[readCount];
+                    System.arraycopy(buffer, 0, notNullPart, 0, readCount);
+
+                    TicketApp.getMainThreadHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            EventBus.getDefault().post(new StringBufferEvent(bytesToHex(notNullPart)));
+                        }
+                    });
+
                 }
 
             } catch (Exception ex) {
@@ -165,7 +183,11 @@ public class DeviceConnection implements IConnection {
             }
 
             for (int i = 0; i < readCount - 1; i++) {
-                if (buffer[i] == '\r' && buffer[i + 1] == '\n') {
+                if (
+                        (buffer[i] == 0x0d || buffer[i] == 0x0a) &&
+                                (buffer[i + 1] == 0x0d || buffer[i + 1] == 0x0a) &&
+                                (buffer[i] != buffer[i + 1])) // сто пудов, можно проще, надо раскурить Карту Карно
+                {
                     //получили конец строки
                     //копируем от начала до этой позиции вместе с переносом
                     //удаляем из буффера (большого) все до этой позиции + 2 = ждем новую строку
@@ -177,7 +199,7 @@ public class DeviceConnection implements IConnection {
 
 
                     //в line теперь строка с переносом, надо разобрать
-                    ByteBuffer lineBuffer = ByteBuffer.allocate(line.length);
+                    ByteBuffer lineBuffer = ByteBuffer.allocate(2 * line.length);
                     lineBuffer.put(line);
 
                     byte msgType = lineBuffer.get();

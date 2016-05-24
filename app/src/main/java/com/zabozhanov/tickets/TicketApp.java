@@ -1,6 +1,7 @@
 package com.zabozhanov.tickets;
 
 import android.app.Application;
+import android.os.Handler;
 
 import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
@@ -16,6 +17,12 @@ public class TicketApp extends Application {
 
     public static TicketApp getInstance() {
         return mInstance;
+    }
+
+    private static Handler mainThreadHandler = new Handler();
+
+    public static Handler getMainThreadHandler() {
+        return mainThreadHandler;
     }
 
     @Override
